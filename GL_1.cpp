@@ -46,7 +46,7 @@ const GLchar* fragmentSource = R"glsl(
 	void main()
 	{
 	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);
-	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord);
+	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*vec4(Color, 1.0);
 	//outColor = vec4(Color, 1.0);
 	}
 	)glsl";
