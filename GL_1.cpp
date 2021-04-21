@@ -42,11 +42,12 @@ const GLchar* fragmentSource = R"glsl(
 	in vec2 TexCoord;
 	uniform sampler2D texture1;
 	uniform sampler2D texture2;	
+	uniform sampler2D texture3;
 
 	void main()
 	{
-	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);
-	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*vec4(Color, 1.0);
+	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), texture(texture3, TexCoord), 0.5);
+	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*texture(texture3, TexCoord);
 	//outColor = vec4(Color, 1.0);
 	}
 	)glsl";
@@ -66,8 +67,8 @@ int lastX;
 int lastY;
 
 void cube(int buffer) {
-	//int punkty = 36;
-	int punkty = 24;
+	int punkty = 36;
+	//int punkty = 24;
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
@@ -96,21 +97,21 @@ void cube(int buffer) {
 		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
 		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
 		0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 
-		/*-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f*/
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f
 	};
 
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -399,14 +400,14 @@ int main() {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	unsigned char* data = stbi_load("textures/vector-basketball-texture.jpg", &width, &height, &nrChannel, 0);
+	unsigned char* data = stbi_load("textures/jp2.bmp", &width, &height, &nrChannel, 0);
 
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		std::cout << "ZBYCHOLUDZIE COS SIE POPSULO\n";
+		std::cout << "ZBYCHOLUDZIE COS SIE POPSULO1\n";
 	}
 	stbi_image_free(data);
 
@@ -423,19 +424,44 @@ int main() {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	data = stbi_load("textures/vector-grunge-template.jpg", &width, &height, &nrChannel, 0);
+	data = stbi_load("textures/upload.bmp", &width, &height, &nrChannel, 0);
 
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		std::cout << "ZBYCHOLUDZIE COS SIE POPSULO\n";
+		std::cout << "ZBYCHOLUDZIE COS SIE POPSULO2\n";
+	}
+	stbi_image_free(data);
+
+	uint texture3;
+
+	glGenTextures(1, &texture3);
+	glBindTexture(GL_TEXTURE_2D, texture3);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	data = stbi_load("textures/swag.bmp", &width, &height, &nrChannel, 0);
+
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "ZBYCHOLUDZIE COS SIE POPSULO3\n";
 	}
 	stbi_image_free(data);
 
 	glUniform1f(glGetUniformLocation(shaderProgram, "texture1"), 0);
 	glUniform1f(glGetUniformLocation(shaderProgram, "texture2"), 1);
+	glUniform1f(glGetUniformLocation(shaderProgram, "texture3"), 2);
 
 	// Rozpoczęcie pętli zdarzeń
 
@@ -544,7 +570,10 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 12);
 		//glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture2);
-		glDrawArrays(GL_TRIANGLES, 12, 24);
+		glDrawArrays(GL_TRIANGLES, 12, 12);
+
+		glBindTexture(GL_TEXTURE_2D, texture3);
+		glDrawArrays(GL_TRIANGLES, 24, 12);
 
 		// Wymiana buforów tylni/przedni
 		window.display();
