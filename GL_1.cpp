@@ -46,7 +46,8 @@ const GLchar* fragmentSource = R"glsl(
 
 	void main()
 	{
-	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), texture(texture3, TexCoord), 0.5);
+	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), texture(texture3, TexCoord), 0.33);
+	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);
 	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*texture(texture3, TexCoord);
 	//outColor = vec4(Color, 1.0);
 	}
@@ -84,7 +85,7 @@ void cube(int buffer) {
 		0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		 
+
 		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
@@ -257,6 +258,64 @@ void setCameraKeyboard(GLint uniView, float elapsedTime) {
 	glm::mat4 view;
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+}
+
+void StereoProjection(GLuint shaderProgram_, float _left, float _right, float _bottom, float _top, float _near, float _far, float _zero_plane, float _dist, float _eye)
+{
+	//    Perform the perspective projection for one eye's subfield.
+	//    The projection is in the direction of the negative z-axis.
+	//            _left=-6.0;
+	//            _right=6.0;
+	//            _bottom=-4.8;
+	   //             _top=4.8;
+	//    [default: -6.0, 6.0, -4.8, 4.8]
+	//    left, right, bottom, top = the coordinate range, in the plane of zero parallax setting,
+	//         which will be displayed on the screen.
+	//         The ratio between (right-left) and (top-bottom) should equal the aspect
+	//    ratio of the display.
+
+
+	   //                  _near=6.0;
+	   //                  _far=-20.0;
+	//    [default: 6.0, -6.0]
+	//    near, far = the z-coordinate values of the clipping planes.
+
+	   //                  _zero_plane=0.0;
+	//    [default: 0.0]
+	//    zero_plane = the z-coordinate of the plane of zero parallax setting.
+
+	//    [default: 14.5]
+	  //                     _dist=10.5;
+	//   dist = the distance from the center of projection to the plane of zero parallax.
+
+	//    [default: -0.3]
+	  //                 _eye=-0.3;
+	//    eye = half the eye separation; positive for the right eye subfield,
+	//    negative for the left eye subfield.
+
+	float   _dx = _right - _left;
+	float   _dy = _top - _bottom;
+
+	float   _xmid = (_right + _left) / 2.0;
+	float   _ymid = (_top + _bottom) / 2.0;
+
+	float   _clip_near = _dist + _zero_plane - _near;
+	float   _clip_far = _dist + _zero_plane - _far;
+
+	float  _n_over_d = _clip_near / _dist;
+
+	float   _topw = _n_over_d * _dy / 2.0;
+	float   _bottomw = -_topw;
+	float   _rightw = _n_over_d * (_dx / 2.0 - _eye);
+	float   _leftw = _n_over_d * (-_dx / 2.0 - _eye);
+
+	// Create a fustrum, and shift it off axis
+	glm::mat4 proj = glm::frustum(_leftw, _rightw, _bottomw, _topw, _clip_near, _clip_far);
+
+	proj = glm::translate(proj, glm::vec3(-_xmid - _eye, -_ymid, 0));
+
+	GLint uniProj = glGetUniformLocation(shaderProgram_, "proj");
+	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 int main() {
@@ -466,11 +525,17 @@ int main() {
 	// Rozpoczęcie pętli zdarzeń
 
 	bool running = true;
+
 	int mouseValueY = 0;//verticesSize;
 	int primitive = GL_TRIANGLES;
+	int tryb = 3;
+	int counter = 0;
+
+	float dist = 13;
+	float zeroPlane = 0;
+	float eye = 0.05;
 
 	window.setFramerateLimit(60);
-	int counter = 0;
 
 	sf::Clock clock;
 	sf::Time time;
@@ -482,7 +547,7 @@ int main() {
 		//std::cout << "ZBYCHOLUDY " << counter << "\n";
 		if (counter > FPS) {
 			//window.setTitle("FPS: " + std::to_string(FPS) + "author: StanMarek");
-			window.setTitle(std::to_string(FPS));
+			//window.setTitle(std::to_string(FPS));
 			counter = 0;
 		}
 		sf::Event windowEvent;
@@ -493,7 +558,7 @@ int main() {
 				running = false;
 				break;
 
-			case sf::Event::KeyPressed:
+			case sf::Event::KeyPressed: {
 				switch (windowEvent.key.code)
 				{
 				case sf::Keyboard::Escape:
@@ -529,8 +594,36 @@ int main() {
 				case sf::Keyboard::Numpad0:
 					primitive = GL_POLYGON;
 					break;
+				case sf::Keyboard::Q:
+					dist += 0.1;
+					break;
+				case sf::Keyboard::W:
+					dist -= 0.1;
+					break;
+				case sf::Keyboard::A:
+					zeroPlane += 0.1;
+					break;
+				case sf::Keyboard::S:
+					zeroPlane -= 0.1;
+					break;
+				case sf::Keyboard::Z:
+					eye += 0.005;
+					break;
+				case sf::Keyboard::X:
+					eye -= 0.005;
+					break;
+				case sf::Keyboard::Num1:
+					tryb = 1;
+					break;
+				case sf::Keyboard::Num2:
+					tryb = 2;
+					break;
+				case sf::Keyboard::Num3:
+					tryb = 3;
+					break;
 				}
-
+			}break;
+			
 				/*case sf::Event::MouseMoved:
 					if (windowEvent.mouseMove.y > mouseValueY) {
 						verticesSize++;
@@ -565,16 +658,52 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glDrawArrays(GL_TRIANGLES, 0, 24);*/
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
+		/*glBindTexture(GL_TEXTURE_2D, texture1);
 		glDrawArrays(GL_TRIANGLES, 0, 12);
-		//glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glDrawArrays(GL_TRIANGLES, 12, 12);
-
 		glBindTexture(GL_TEXTURE_2D, texture3);
-		glDrawArrays(GL_TRIANGLES, 24, 12);
+		glDrawArrays(GL_TRIANGLES, 24, 12);*/
 
+		/*glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, texture3);*/
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
+		switch (tryb) {
+		case 1:
+			glViewport(0, 0, window.getSize().x, window.getSize().y);
+			glDrawBuffer(GL_BACK_LEFT);
+			StereoProjection(shaderProgram, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, eye);
+			glColorMask(true, false, false, false);
+			glDrawArrays(primitive, 0, 36);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glDrawBuffer(GL_BACK_RIGHT);
+			StereoProjection(shaderProgram, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, -eye);
+			glColorMask(false, false, true, false);
+			glDrawArrays(primitive, 0, 36);
+			glColorMask(true, true, true, true);
+			break;
+		case 2:
+			glViewport(0, 0, window.getSize().x / 2, window.getSize().y);
+			StereoProjection(shaderProgram, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, eye);
+			glDrawArrays(primitive, 0, 12);
+			glDrawArrays(primitive, 12, 24);
+			glViewport(window.getSize().x / 2, 0, window.getSize().x / 2, window.getSize().y);
+			StereoProjection(shaderProgram, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, -eye);
+			glDrawArrays(primitive, 0, 12);
+			glDrawArrays(primitive, 12, 24);
+			break;
+		case 3:
+			glViewport(0, 0, window.getSize().x, window.getSize().y);
+			glDrawArrays(primitive, 0, 36);
+			break;
+		}
 		// Wymiana buforów tylni/przedni
 		window.display();
 	}
