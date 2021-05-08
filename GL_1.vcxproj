@@ -146,6 +146,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GL_1.cpp" />
+    <ClCompile Include="shaderClass.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shaderClass.h" />
+    <ClInclude Include="VAOClass.h" />
+    <ClInclude Include="VBOClass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader.frag" />
+    <None Include="shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
