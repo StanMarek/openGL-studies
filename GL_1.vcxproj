@@ -149,11 +149,14 @@
     <ClCompile Include="globalVariables.cpp" />
     <ClCompile Include="GL_1.cpp" />
     <ClCompile Include="shaderClass.cpp" />
+    <ClCompile Include="VAOClass.cpp" />
+    <ClCompile Include="VBOClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externalFunctions.h" />
     <ClInclude Include="globalVariables.h" />
     <ClInclude Include="shaderClass.h" />
+    <ClInclude Include="textureClass.h" />
     <ClInclude Include="VAOClass.h" />
     <ClInclude Include="VBOClass.h" />
   </ItemGroup>

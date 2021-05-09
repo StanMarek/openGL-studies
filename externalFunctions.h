@@ -3,11 +3,13 @@
 
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
+#include "VBOClass.h"
 #include "globalVariables.h"
 typedef unsigned int uint;
 
 namespace functions {
-	void cube(int buffer);
+	void cube(GLuint buffer);
+	void cube(VertexBufferObject& vbo);
 	void setCamera(GLint _uView);
 	void circle(int verticesSize);
 	void setCameraMouse(GLint uniView, float elapsedTime, const sf::Window& window);

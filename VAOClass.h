@@ -2,7 +2,6 @@
 #define VAO_CLASS_H
 
 #include <GL/glew.h>
-#include "VBOClass.h"
 
 class VertexArrayObject
 {
@@ -13,6 +12,7 @@ public:
 
 	void Bind();
 	void Unbind();
+	void Delete();
 };
 
 #endif

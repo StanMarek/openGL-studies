@@ -38,18 +38,18 @@ int main() {
 	glewInit();
 
 	// Utworzenie VAO (Vertex Array Object)
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	VAO vao;
+	GLuint vaoID = vao.ID;
+	glGenVertexArrays(1, &vaoID);
+	glBindVertexArray(vaoID);
 
 	// Utworzenie VBO (Vertex Buffer Object)
 
 	// i skopiowanie do niego danych wierzchołkowych
 
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-
+	VBO vbo;
+	GLuint vboID = vbo.ID;
+	
 	exf::cube(vbo);
 
 	// Utworzenie i skompilowanie shadera
@@ -311,11 +311,11 @@ int main() {
 
 	// Kasowanie programu i czyszczenie buforów
 
-	glDeleteProgram(shaderProgram);
+	shader.Delete();
 	//glDeleteShader(fragmentShader);
 	//glDeleteShader(vertexShader);
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
+	vbo.Delete();
+	vao.Delete();
 
 	// Zamknięcie okna renderingu
 	window.close();
