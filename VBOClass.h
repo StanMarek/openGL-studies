@@ -1,4 +1,4 @@
-#ifndef VBO_CLAS_H
+#ifndef VBO_CLASS_H
 #define VBO_CLASS_H
 
 #include <GL/glew.h>
@@ -9,9 +9,11 @@ public:
 	GLuint ID;
 
 	VertexBufferObject();
+	//VertexBufferObject(GLfloat* vertices, GLsizeiptr size);
 
 	void Bind();
 	void Unbind();
+	void Delete();
 };
 
-#endif // !VBO_CLAS_H
+#endif // !VBO_CLASS_H

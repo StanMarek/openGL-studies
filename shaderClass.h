@@ -1,5 +1,6 @@
 #ifndef SHADER_CLASS_H
 #define SHADER_CLASS_H
+#define BUFFER_SIZE 512
 
 #include <GL/glew.h>
 #include<string>
@@ -8,7 +9,7 @@
 #include<iostream>
 #include<cerrno>
 
-std::string get_file_contents(const char* filename);
+std::string getShaderFileContent(const char* filename);
 
 class Shader
 {
