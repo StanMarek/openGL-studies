@@ -1,7 +1,6 @@
 #include "shaderClass.h"
-#define BUFFER_SIZE 512
 
-std::string get_file_contents(const char* filename)
+std::string getShaderFileContent(const char* filename)
 {
 	std::ifstream in(filename, std::ios::binary);
 	if (in)
@@ -19,8 +18,8 @@ std::string get_file_contents(const char* filename)
 
 Shader::Shader(const char* vertexFile, const char* fragmentFile)
 {
-	std::string vertexCode = get_file_contents(vertexFile);
-	std::string fragmentCode = get_file_contents(fragmentFile);
+	std::string vertexCode = getShaderFileContent(vertexFile);
+	std::string fragmentCode = getShaderFileContent(fragmentFile);
 
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();

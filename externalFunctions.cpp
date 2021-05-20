@@ -1,4 +1,5 @@
 #include "externalFunctions.h"
+#include <fstream>
 
 void functions::cube(GLuint buffer) {
 	int punkty = 36;
@@ -313,4 +314,141 @@ void functions::generateCubeTextures(int primitive, uint texture1, uint texture2
 	glDrawArrays(primitive, 12, 12);
 	glBindTexture(GL_TEXTURE_2D, texture3);
 	glDrawArrays(primitive, 24, 12);
+}
+
+void functions::loadModelObj(int& punkty_, const char* filename, int buffer)
+{
+	int vert_num = 0;
+	int trian_num = 0;
+
+	std::ifstream myReadFile;
+	myReadFile.open(filename);
+
+	std::string output;
+
+	if (myReadFile.is_open()) {
+		while (!myReadFile.eof()) {
+			myReadFile >> output;
+			if (output == "v") vert_num++;
+			if (output == "f") trian_num++;
+		}
+	}
+
+	myReadFile.close();
+	myReadFile.open(filename);
+
+	float** vert = new float* [vert_num];
+	for (int k = 0; k < vert_num; k++)
+		vert[k] = new float[3];
+
+	int** trian = new int* [trian_num];
+	for (int k = 0; k < trian_num; k++)
+		trian[k] = new int[3];
+
+	int licz_vert = 0;
+	int licz_elem = 0;
+
+	while (!myReadFile.eof()) {
+		myReadFile >> output;
+		if (output == "v") {
+			myReadFile >> vert[licz_vert][0];
+			myReadFile >> vert[licz_vert][1];
+			myReadFile >> vert[licz_vert][2];
+			licz_vert++;
+		}
+		if (output == "f") {
+			myReadFile >> trian[licz_elem][0];
+			myReadFile >> trian[licz_elem][1];
+			myReadFile >> trian[licz_elem][2];
+			licz_elem++;
+		}
+		output.clear();
+	}
+
+	GLfloat* vertices = new GLfloat[trian_num * 9];
+	int vert_current = 0;
+
+	for (int i = 0; i < trian_num; i++) {
+		vertices[vert_current + 0] = vert[trian[i][0] - 1][0];
+		vertices[vert_current + 1] = vert[trian[i][0] - 1][1];
+		vertices[vert_current + 2] = vert[trian[i][0] - 1][2];
+
+		vertices[vert_current + 3] = vert[trian[i][1] - 1][0];
+		vertices[vert_current + 4] = vert[trian[i][1] - 1][1];
+		vertices[vert_current + 5] = vert[trian[i][1] - 1][2];
+
+		vertices[vert_current + 6] = vert[trian[i][2] - 1][0];
+		vertices[vert_current + 7] = vert[trian[i][2] - 1][1];
+		vertices[vert_current + 8] = vert[trian[i][2] - 1][2];
+
+		vert_current += 9;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * trian_num * 9, vertices, GL_STATIC_DRAW);
+
+	punkty_ = trian_num * 9;
+
+	delete[] vertices;
+	for (int i = 0; i < vert_num; i++)
+		delete[] vert[i];
+	delete[] vert;
+	for (int i = 0; i < vert_num; i++)
+		delete[] trian[i];
+	delete[] trian;
+}
+
+void functions::loadModelObj_EBO(int& punkty_, const char* filename, int buffer_vbo, int buffer_ebo)
+{
+	int vert_num = 0;
+	int trian_num = 0;
+
+	std::ifstream myReadFile;
+	myReadFile.open(filename);
+
+	std::string output;
+
+	if (myReadFile.is_open()) {
+		while (!myReadFile.eof()) {
+			myReadFile >> output;
+			if (output == "v") vert_num++;
+			if (output == "f") trian_num++;
+		}
+	}
+
+	myReadFile.close();
+	myReadFile.open(filename);
+
+	float* vert = new float[vert_num * 3];
+	int* element = new int[trian_num * 3];
+	int licz_vert = 0;
+	int licz_elem = 0;
+	int tmp = 0;
+
+	while (!myReadFile.eof()) {
+		myReadFile >> output;
+		if (output == "v") {
+			myReadFile >> vert[licz_vert];
+			myReadFile >> vert[licz_vert + 1];
+			myReadFile >> vert[licz_vert + 2];
+			licz_vert += 3;
+		}
+		if (output == "f") {
+			myReadFile >> tmp;	tmp--; element[licz_elem] = tmp;
+			myReadFile >> tmp;	tmp--; element[licz_elem + 1] = tmp;
+			myReadFile >> tmp;	tmp--; element[licz_elem + 2] = tmp;
+			licz_elem += 3;
+		}
+		output.clear();
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vert_num * 3, vert, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer_ebo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint) * trian_num * 3, element, GL_STATIC_DRAW);
+
+	punkty_ = trian_num * 3;
+
+	delete[] vert;
+	delete[] element;
 }

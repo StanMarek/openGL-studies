@@ -145,14 +145,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EBOClass.cpp" />
     <ClCompile Include="externalFunctions.cpp" />
     <ClCompile Include="globalVariables.cpp" />
     <ClCompile Include="GL_1.cpp" />
     <ClCompile Include="shaderClass.cpp" />
+    <ClCompile Include="textureClass.cpp" />
     <ClCompile Include="VAOClass.cpp" />
     <ClCompile Include="VBOClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EBOClass.h" />
     <ClInclude Include="externalFunctions.h" />
     <ClInclude Include="globalVariables.h" />
     <ClInclude Include="shaderClass.h" />

@@ -10,6 +10,7 @@ uniform sampler2D texture3;
 void main() {
 	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), texture(texture3, TexCoord), 0.33);
 	//outColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.5);
-	outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*texture(texture3, TexCoord);
+	//outColor = texture(texture1, TexCoord)*texture(texture2, TexCoord)*texture(texture3, TexCoord);
 	//outColor = vec4(Color, 1.0);
+	outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
