@@ -18,19 +18,23 @@
 #include "VAOClass.h"
 #include "VBOClass.h"
 #include "EBOClass.h"
+#include "textureClass.h"
 
 typedef unsigned int uint;
 namespace exf = functions;
+
+GLuint loadTexture(const char* texturePath);
 
 int main() {
 
 	sf::ContextSettings settings;
 	settings.depthBits = 24;
 	settings.stencilBits = 8;
+	settings.antialiasingLevel = 4;
 
 	// Creating rendering window
 	// Small window
-	sf::Window window(sf::VideoMode(850, 850, 32), "OpenGL StanMarek", sf::Style::Titlebar | sf::Style::Close, settings);
+	sf::Window window(sf::VideoMode(800, 800, 32), "OpenGL StanMarek", sf::Style::Titlebar | sf::Style::Close, settings);
 	// Full screen
 	//sf::Window window(sf::VideoMode(1920, 1080, 32), "OpenGL StanMarek", sf::Style::Fullscreen | sf::Style::Close, settings);
 
@@ -51,9 +55,14 @@ int main() {
 	// Creating VBO (Vertex Buffer Object
 	VertexBufferObject VBO;
 
+	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_CULL_FACE);
+
 	// Loading model from .obj file
 	int points = 0;
-	exf::loadModelObj(points, "projekt.obj", VBO.ID);
+	std::vector<std::vector<int>> objects;
+	//exf::loadModelObj(points, "models/projekt.obj", VBO.ID);
+	exf::loadModelOBJNormalsCoord(points, "models/proj1smooth.obj", VBO.ID, objects);
 
 	// Creating vertex and fragment shader
 	Shader shader("shader.vert", "shader.frag");
@@ -61,7 +70,7 @@ int main() {
 
 	GLint posAttrib = glGetAttribLocation(shader.ID, "position");
 	glEnableVertexAttribArray(posAttrib);
-	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
 
 	/*
 	Uncomment this (colAttrib) to have colors,
@@ -71,12 +80,16 @@ int main() {
 	glEnableVertexAttribArray(colAttrib);
 	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));*/
 
-	/*GLint TexCoord = glGetAttribLocation(shaderProgram, "aTexCoord");
+	GLint NorAttrib = glGetAttribLocation(shader.ID, "aNormal");
+	glEnableVertexAttribArray(NorAttrib);
+	glVertexAttribPointer(NorAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+	GLint TexCoord = glGetAttribLocation(shader.ID, "aTexCoord");
 	glEnableVertexAttribArray(TexCoord);
-	glVertexAttribPointer(TexCoord, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));*/
+	glVertexAttribPointer(TexCoord, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
 
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	//model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	GLint uniTrans = glGetUniformLocation(shader.ID, "model");
 	glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(model));
@@ -87,12 +100,30 @@ int main() {
 	GLint uniProj = glGetUniformLocation(shader.ID, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
+	//glm::vec3 lightPos(-2.2f, 2.0f, 10.0f);
+	glm::vec3 lightPos(-3.3f, 3.0f, 15.0f);
+	//glm::vec3 lightPos(-1000.0f, 1000.0f, 10000.0f);
+	GLint uniLightPos = glGetUniformLocation(shader.ID, "lightsPos");
+	glUniform3fv(uniLightPos, 1, glm::value_ptr(lightPos));
+
+	uniCamPos = glGetUniformLocation(shader.ID, "camPos");
+
 	glEnable(GL_DEPTH_TEST);
+
+	std::vector<GLuint> textures;
+	GLuint texture1 = loadTexture("textures/crate.bmp");
+	GLuint texture2 = loadTexture("textures/metal.bmp");
+	GLuint texture3 = loadTexture("textures/basketball.jpg");
+	GLuint texture4 = loadTexture("textures/pink.jpg");
+	textures.push_back(texture1);
+	textures.push_back(texture2);
+	textures.push_back(texture3);
+	textures.push_back(texture4);
 
 	bool running = true;
 
 	int mouseValueY = 0;
-	int primitive = GL_LINES;
+	int primitive = GL_TRIANGLES;
 	int tryb = 3;
 	int counter = 0;
 
@@ -100,7 +131,7 @@ int main() {
 	float zeroPlane = 0;
 	float eye = 0.05;
 
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(150);
 
 	sf::Clock clock;
 	sf::Time time;
@@ -155,27 +186,29 @@ int main() {
 			glDrawBuffer(GL_BACK_LEFT);
 			exf::stereoProjection(shader.ID, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, eye);
 			glColorMask(true, false, false, false);
-			glDrawArrays(primitive, 0, points);
+			exf::bindTextureModel(primitive, textures, objects);
 			glClear(GL_DEPTH_BUFFER_BIT);
 
 			glDrawBuffer(GL_BACK_RIGHT);
 			exf::stereoProjection(shader.ID, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, -eye);
 			glColorMask(false, false, true, false);
-			glDrawArrays(primitive, 0, points);
+			exf::bindTextureModel(primitive, textures, objects);
+
 			glColorMask(true, true, true, true);
 			break;
 		case 2:
 			glViewport(0, 0, window.getSize().x / 2, window.getSize().y);
 			exf::stereoProjection(shader.ID, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, eye);
-			glDrawArrays(primitive, 0, points);
+			exf::bindTextureModel(primitive, textures, objects);
 
 			glViewport(window.getSize().x / 2, 0, window.getSize().x / 2, window.getSize().y);
 			exf::stereoProjection(shader.ID, -6, 6, -4.8, 4.8, 12.99, -100, zeroPlane, dist, -eye);
-			glDrawArrays(primitive, 0, points);
+			glBindTexture(GL_TEXTURE_2D, texture1);
+			exf::bindTextureModel(primitive, textures, objects);
 			break;
 		case 3:
 			glViewport(0, 0, window.getSize().x, window.getSize().y);
-			glDrawArrays(primitive, 0, points);
+			exf::bindTextureModel(primitive, textures, objects);
 			break;
 		}
 		window.display();
@@ -190,3 +223,33 @@ int main() {
 	window.close();
 	return 0;
 }
+
+GLuint loadTexture(const char* texturePath)
+{
+	GLuint texture;
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8.0f);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "ZBYCHOLUDZIE TESKTURA " << texturePath << " NIE DZIALA" << std::endl;
+	}
+	stbi_image_free(data);
+
+	return texture;
+}
+

@@ -13,3 +13,5 @@ double pitch = 0;
 
 int lastX = 0;
 int lastY = 0;
+
+GLint uniCamPos = 0;

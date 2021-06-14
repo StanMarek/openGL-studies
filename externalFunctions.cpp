@@ -1,5 +1,4 @@
 #include "externalFunctions.h"
-#include <fstream>
 
 void functions::cube(GLuint buffer) {
 	int punkty = 36;
@@ -242,6 +241,8 @@ void functions::setCameraKeyboard(GLint uniView, float elapsedTime) {
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	}
 
+	glUniform3fv(uniCamPos, 1, glm::value_ptr(cameraPos));
+
 	glm::mat4 view;
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
@@ -451,4 +452,190 @@ void functions::loadModelObj_EBO(int& punkty_, const char* filename, int buffer_
 
 	delete[] vert;
 	delete[] element;
+}
+
+bool functions::loadModelOBJNormalsCoord(int& punkty_, const char* filename, int buffer, std::vector<std::vector<int>>& objects)
+{
+	int vert_num = 0;
+	int triangles = 0;
+	int normals = 0;
+	int coord_num = 0;
+	int obj_num = 0;
+
+	std::ifstream myReadFile;
+	myReadFile.open(filename);
+	std::string output;
+	if (myReadFile.is_open()) {
+		while (!myReadFile.eof()) {
+			myReadFile >> output;
+			if (output == "v") vert_num++;
+			if (output == "f") triangles++;
+			if (output == "vn") normals++;
+			if (output == "vt") coord_num++;
+			if (output == "o") {
+				if (objects.size() == 0) {
+					objects.push_back({ 0 });
+				}
+				else {
+					objects.back().push_back(triangles * 3 - objects.back()[0]);
+					objects.push_back({ triangles * 3 });
+				}
+			}
+		}
+		objects.back().push_back(triangles * 3 - objects.back()[0]);
+	}
+
+	myReadFile.close();
+	myReadFile.open(filename);
+
+	float** vert;
+	vert = new float* [vert_num]; //przydzielenie pamiêci na w wierszy
+
+	for (int i = 0; i < vert_num; i++)
+		vert[i] = new float[3];
+
+
+	int** trian;
+	trian = new int* [triangles]; //przydzielenie pamiêci na w wierszy
+
+	for (int i = 0; i < triangles; i++)
+		trian[i] = new int[9];
+
+	float** norm;
+	norm = new float* [normals]; //przydzielenie pamiêci na w wierszy
+
+	for (int i = 0; i < normals; i++)
+		norm[i] = new float[3];
+
+	float** coord;
+	coord = new float* [coord_num]; //przydzielenie pamiêci na w wierszy
+
+	for (int i = 0; i < coord_num; i++)
+		coord[i] = new float[2];
+
+	int licz_vert = 0;
+	int licz_triang = 0;
+	int licz_normals = 0;
+	int licz_coord = 0;
+
+
+	while (!myReadFile.eof()) {
+		output = "";
+		myReadFile >> output;
+		if (output == "vn") { myReadFile >> norm[licz_normals][0]; myReadFile >> norm[licz_normals][1]; myReadFile >> norm[licz_normals][2]; licz_normals++; }
+		if (output == "v") { myReadFile >> vert[licz_vert][0]; myReadFile >> vert[licz_vert][1]; myReadFile >> vert[licz_vert][2]; licz_vert++; }
+		if (output == "vt") { myReadFile >> coord[licz_coord][0]; myReadFile >> coord[licz_coord][1]; licz_coord++; }
+
+		if (output == "f") {
+
+			for (int i = 0; i < 9; i += 3)
+			{
+				std::string s;
+				myReadFile >> s;
+				std::stringstream ss(s);
+
+				std::vector <std::string> el;
+				std::string item;
+
+
+				while (getline(ss, item, '/')) {
+					el.push_back(item);
+				}
+				trian[licz_triang][i] = std::stoi(el[0]);
+				trian[licz_triang][i + 1] = std::stoi(el[1]);
+				trian[licz_triang][i + 2] = std::stoi(el[2]);
+
+
+			}
+			licz_triang++;
+		}
+	}
+	GLfloat* vertices = new GLfloat[triangles * 24];
+
+	int vert_current = 0;
+
+	for (int i = 0; i < triangles; i++)
+	{
+		vertices[vert_current] = vert[trian[i][0] - 1][0];
+		vertices[vert_current + 1] = vert[trian[i][0] - 1][1];
+		vertices[vert_current + 2] = vert[trian[i][0] - 1][2];
+		vertices[vert_current + 3] = norm[trian[i][2] - 1][0];
+		vertices[vert_current + 4] = norm[trian[i][2] - 1][1];
+		vertices[vert_current + 5] = norm[trian[i][2] - 1][2];
+		vertices[vert_current + 6] = coord[trian[i][1] - 1][0];
+		vertices[vert_current + 7] = coord[trian[i][1] - 1][1];
+
+		vertices[vert_current + 8] = vert[trian[i][3] - 1][0];
+		vertices[vert_current + 9] = vert[trian[i][3] - 1][1];
+		vertices[vert_current + 10] = vert[trian[i][3] - 1][2];
+		vertices[vert_current + 11] = norm[trian[i][5] - 1][0];
+		vertices[vert_current + 12] = norm[trian[i][5] - 1][1];
+		vertices[vert_current + 13] = norm[trian[i][5] - 1][2];
+		vertices[vert_current + 14] = coord[trian[i][4] - 1][0];
+		vertices[vert_current + 15] = coord[trian[i][4] - 1][1];
+
+		vertices[vert_current + 16] = vert[trian[i][6] - 1][0];
+		vertices[vert_current + 17] = vert[trian[i][6] - 1][1];
+		vertices[vert_current + 18] = vert[trian[i][6] - 1][2];
+		vertices[vert_current + 19] = norm[trian[i][8] - 1][0];
+		vertices[vert_current + 20] = norm[trian[i][8] - 1][1];
+		vertices[vert_current + 21] = norm[trian[i][8] - 1][2];
+		vertices[vert_current + 22] = coord[trian[i][7] - 1][0];
+		vertices[vert_current + 23] = coord[trian[i][7] - 1][1];
+
+		vert_current += 24;
+	}
+
+	for (auto i : objects) {
+		for (auto j : i) {
+			std::cout << j << ' ';
+		}
+		std::cout << std::endl;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * triangles * 24, vertices, GL_STATIC_DRAW);
+
+	punkty_ = triangles * 3;
+
+	delete vertices;
+
+	for (int i = 0; i < vert_num; i++)
+		delete[] vert[i];
+	delete[] vert;
+
+	for (int i = 0; i < triangles; i++)
+		delete[] trian[i];
+	delete[] trian;
+
+	for (int i = 0; i < normals; i++)
+		delete[] norm[i];
+	delete[] norm;
+
+	for (int i = 0; i < coord_num; i++)
+		delete[] coord[i];
+	delete[] coord;
+
+	return 0;
+}
+
+void functions::bindTextureModel(GLint _primitive, std::vector<unsigned int>& _textures, std::vector<std::vector<int>>& _objects) {
+	// krzesla
+	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+	glDrawArrays(_primitive, _objects[1][0], _objects[1][1]);
+	glDrawArrays(_primitive, _objects[2][0], _objects[2][1]);
+	glDrawArrays(_primitive, _objects[3][0], _objects[3][1]);
+	glDrawArrays(_primitive, _objects[4][0], _objects[4][1]);
+
+	// stol
+	glBindTexture(GL_TEXTURE_2D, _textures[1]);
+	glDrawArrays(_primitive, _objects[0][0], _objects[0][1]);
+
+	// pilka
+	glBindTexture(GL_TEXTURE_2D, _textures[2]);
+	glDrawArrays(_primitive, _objects[5][0], _objects[5][1]);
+
+	// cylinder
+	glBindTexture(GL_TEXTURE_2D, _textures[3]);
+	glDrawArrays(_primitive, _objects[6][0], _objects[6][1]);
 }

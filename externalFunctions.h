@@ -5,8 +5,15 @@
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
 #include "VBOClass.h"
+#include <fstream>
+#include <string>
+#include <istream>
+#include <sstream>
+#include <iostream>
+#include <vector>
 #include "globalVariables.h"
-//#include "textureClass.h"
+
+
 typedef unsigned int uint;
 
 namespace functions {
@@ -20,6 +27,8 @@ namespace functions {
 	void generateCubeTextures(int primitive, uint texture1, uint texture2, uint texture3);
 	void loadModelObj(int& punkty_, const char* filename, int buffer);
 	void loadModelObj_EBO(int& punkty_, const char* filename, int buffer_vbo, int buffer_ebo);
+	bool loadModelOBJNormalsCoord(int& punkty_, const char* filename, int buffer, std::vector<std::vector<int>>& objects);
+	void bindTextureModel(GLint _primitive, std::vector<unsigned int>& _textures, std::vector<std::vector<int>>& _objects);
 }
 
 #endif // !EXTERNAL_FUNCTIONS_H

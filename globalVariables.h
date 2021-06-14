@@ -3,6 +3,7 @@
 #define M_PI 3.14159
 
 #include <glm/gtc/type_ptr.hpp>
+#include "GL/glew.h"
 
 extern glm::vec3 cameraPos;
 extern glm::vec3 cameraFront;
@@ -17,5 +18,7 @@ extern double pitch;
 
 extern int lastX;
 extern int lastY;
+
+extern GLint uniCamPos;
 
 #endif

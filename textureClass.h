@@ -5,11 +5,11 @@
 //#include <string>
 //#include <GL/glew.h>
 //#include <fstream>
-//
-//#ifndef STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION	
-//#include "lib/stb_image.h"
-//#endif // STB_IMAGE_IMPLEMENTATION
+//#include "lib//stb_image.h"
+////#ifndef STB_IMAGE_IMPLEMENTATION
+////#define STB_IMAGE_IMPLEMENTATION	
+////#include "lib/stb_image.h"
+////#endif // STB_IMAGE_IMPLEMENTATION
 //
 //class Texture 
 //{
