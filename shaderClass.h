@@ -9,8 +9,19 @@
 #include<iostream>
 #include<cerrno>
 
+/*
+Reads content of shader files like
+vertices shader,
+fragment shader
+param - name or path to shader file
+return - shader converted to string
+*/
 std::string getShaderFileContent(const char* filename);
 
+/*
+varaibles - self described
+methods - self described
+*/
 class Shader
 {
 public:

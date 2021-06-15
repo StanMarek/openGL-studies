@@ -23,6 +23,12 @@
 typedef unsigned int uint;
 namespace exf = functions;
 
+/*
+Loading texture from file with specified path
+na an argument
+param - path to specific texture
+return - texture
+*/
 GLuint loadTexture(const char* texturePath);
 
 int main() {
@@ -100,9 +106,7 @@ int main() {
 	GLint uniProj = glGetUniformLocation(shader.ID, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
-	//glm::vec3 lightPos(-2.2f, 2.0f, 10.0f);
 	glm::vec3 lightPos(-3.3f, 3.0f, 15.0f);
-	//glm::vec3 lightPos(-1000.0f, 1000.0f, 10000.0f);
 	GLint uniLightPos = glGetUniformLocation(shader.ID, "lightsPos");
 	glUniform3fv(uniLightPos, 1, glm::value_ptr(lightPos));
 
@@ -110,6 +114,8 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
+	// Loading textures
+	// and pushing them into vector
 	std::vector<GLuint> textures;
 	GLuint texture1 = loadTexture("textures/crate.bmp");
 	GLuint texture2 = loadTexture("textures/metal.bmp");
@@ -131,6 +137,7 @@ int main() {
 	float zeroPlane = 0;
 	float eye = 0.05;
 
+	// Max FPS = 150
 	window.setFramerateLimit(150);
 
 	sf::Clock clock;

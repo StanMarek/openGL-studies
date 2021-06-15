@@ -3,6 +3,10 @@
 
 #include <GL/glew.h>
 
+/*
+varaibles - self described
+methods - self described
+*/
 class VertexBufferObject
 {
 public:
